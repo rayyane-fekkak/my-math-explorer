@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorateur Géométrique Interactif Avancé</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <button id="main-ui-panel-toggle">☰</button>
+    <div id="ui-panel">
+        <h1>Géométrie 3D</h1>
+        
+        <div class="section">
+            <h2>Choix de la Forme</h2>
+            <select id="shape-selector"></select>
+            <div id="shape-info">
+                <p>Forme: <span id="shape-name">-</span></p>
+                <p>Faces (Théorique): <span id="faces-count">-</span></p>
+                <p>Arêtes (Théorique): <span id="edges-count">-</span></p>
+            </div>
+        </div>
+
+        <div class="section" id="description-panel-section">
+            <h2>Description Actuelle</h2>
+            <p id="demo-explanation">Bienvenue dans l'Explorateur Géométrique !</p>
+        </div>
+        
+        <div class="section">
+            <h2>Exploration Visuelle</h2>
+            <button id="view-mode-full">Mode Plein</button>
+            <button id="view-mode-edges">X-ray</button>
+        </div>
+
+        <div class="section">
+            <h2>Outils d'Interaction</h2>
+            <button id="middle-point-mode">Mode Point Milieu</button>
+            <button id="measure-mode-button">Mode Mesure</button> 
+            <button id="toggle-axes-helper-button">Afficher Axes</button>
+            <button id="clean-dynamic-points-button">Supprimer Éléments</button>
+            <div id="dynamic-interaction-controls">
+                <button id="undo-button" title="Annuler (Ctrl+Z)" aria-label="Annuler" disabled>↩️</button>
+                <button id="redo-button" title="Rétablir (Ctrl+Y)" aria-label="Rétablir" disabled>↪️</button>
+            </div>
+            <div id="dynamic-points-info" style="font-size:0.8em; margin-top:5px;"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Axiomes Fondamentaux</h2>
+            <button id="run-axiom-1">Axiome 1: Droite / 2 pts</button>
+            <button id="run-axiom-2">Axiome 2: Plan / 3 pts</button>
+            <button id="run-axiom-3">Axiome 3: Droite ds Plan</button>
+        </div>
+
+        <div class="section">
+            <h2>Positions Relatives de Deux Droites</h2>
+            <button id="lines-coplanar-intersecting">D et Δ Sécantes</button>
+            <button id="lines-coplanar-strictly-parallel">D et Δ Strictement Parallèles</button>
+            <button id="lines-coplanar-coincident">D et Δ Confondues</button>
+        </div>
+        
+        <div class="section">
+            <h2>Positions Relatives de Deux Plans</h2>
+            <button id="planes-strictly-parallel">𝒫 et 𝒬 Strictement Parallèles</button>
+            <button id="planes-coincident">𝒫 et 𝒬 Confondus</button>
+            <button id="planes-intersecting">𝒫 et 𝒬 Sécants</button>
+        </div>
+
+        <div class="section">
+            <h2>Positions Relatives Droite et Plan</h2>
+            <button id="line-plane-strictly-parallel">Droite // Plan (strict)</button>
+            <button id="line-plane-included">Droite ⊂ Plan</button>
+            <button id="line-plane-intersecting">Droite ∩ Plan = {A}</button>
+        </div>
+
+        <div class="section">
+            <h2>Propriétés de Parallélisme et d'Intersection</h2>
+            <button id="prop-transitivity-parallel-lines">Transitivité Parallélisme (Droites)</button>
+            <button id="prop-line-parallel-plane-via-line">Droite // Plan (via droite incluse)</button>
+            <button id="prop-plane-intersecting-parallel-lines">Plan Sécant à Droites //</button>
+            <button id="prop-roof-theorem">Théorème du Toit</button>
+        </div>
+
+        <div class="section">
+            <h2>Amusement</h2>
+            <button id="party-mode">Mode Festif !</button>
+             <p style="font-size: 0.8em; text-align: center; margin-top:10px;">(Plus d'options via ⚙️)</p>
+        </div>
+         <p style="font-size: 0.7em; text-align: center; color: #777; margin-top:auto;">Projet Géométrie 3D</p>
+    </div>
+
+    <div id="container">
+        <div id="fps-stats">
+            FPS: <span id="fps-current">--</span>
+            (Min: <span id="fps-min">--</span>, Max: <span id="fps-max">--</span>)
+            <div id="fps-graph-bar-container" style="background-color: #555; border-radius: 2px; overflow: hidden;"><div id="fps-graph-bar"></div></div>
+        </div>
+        <div id="main-shape-color-panel">
+            <div class="main-color-picker-item">
+                <label for="main-fill-color-picker">Remplissage Forme:</label>
+                <input type="color" id="main-fill-color-picker" data-css-var="--main-shape-fill-color">
+            </div>
+            <div class="main-color-picker-item">
+                <label for="main-edge-color-picker">Arêtes Forme:</label>
+                <input type="color" id="main-edge-color-picker" data-css-var="--main-shape-edge-color">
+            </div>
+        </div>
+        <div id="create-edge-panel" style="display: none;">
+            <p class="panel-title">Créer une Arête Personnalisée</p>
+            <div class="create-edge-input-group">
+                <label for="edge-point1-input">Point 1:</label>
+                <input type="text" id="edge-point1-input" maxlength="2" placeholder="Ex: A">
+            </div>
+            <div class="create-edge-input-group">
+                <label for="edge-point2-input">Point 2:</label>
+                <input type="text" id="edge-point2-input" maxlength="2" placeholder="Ex: B1">
+            </div>
+            <button id="create-edge-button">Créer Arête</button>
+        </div>
+    </div>
+
+    <button id="hidden-menu-toggle">⚙️</button>
+     <div id="hidden-menu-panel"> 
+        <h3>Options Avancées</h3>
+        <div id="library-status">Chargement des bibliothèques...</div>
+         <label for="lib-mode-select">Mode de chargement:</label>
+        <select id="lib-mode-select">
+            <option value="auto">Automatique</option>
+            <option value="online">Forcer Online</option>
+            <option value="offline">Forcer Offline</option>
+        </select>
+        <button id="apply-lib-mode">Appliquer et Recharger</button>
+
+        <h4>Personnalisation des Couleurs</h4>
+        <div id="color-customization-panel">
+            <!-- Color pickers for demo objects, scene, lights will be listed here -->
+        </div>
+
+        <h4>Autres Options Visuelles</h4>
+        <div id="visual-options-panel">
+             <div class="adv-option-item">
+                <label for="label-font-size-input">Taille Étiquettes (px):</label>
+                <input type="number" id="label-font-size-input" data-css-var="--label-font-size" min="8" max="72" step="1">
+            </div>
+        </div>
+        
+        <div id="advanced-options-controls">
+            <button id="apply-advanced-options-button">Appliquer et Sauvegarder</button>
+            <button id="reset-advanced-options-button">Réinitialiser Options</button>
+        </div>
+    </div>
+
+    <script src="libraryLoader.js" defer></script>
+    <script src="uiManager.js" defer></script>
+    <script src="shapeManager.js" defer></script>
+    <script src="axiomUtilities.js" defer></script>
+    <script src="axiomsCore.js" defer></script>
+    <script src="relativePositions.js" defer></script>
+    <script src="main.js" defer></script> 
+    
+</body>
+</html>
