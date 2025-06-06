@@ -1,4 +1,3 @@
-
 // main.js: Core Three.js setup, global variables, and main loop.
 
 // Global THREE.js variables
@@ -534,28 +533,34 @@ function handleSingleClick_M(intersect) {
     }
 }
 
+function performLabelRename_M(labelSprite, newLabel, oldLabel) {
+    if (!labelSprite || !newLabel) return false;
+
+    if (oldLabel) unregisterLabel_M(oldLabel);
+    registerLabel_M(newLabel);
+
+    labelSprite.userData.labelText = newLabel;
+    if (labelSprite.userData.ownerPointMesh) { // For dynamic point labels attached to point meshes
+        labelSprite.userData.ownerPointMesh.name = newLabel; // Also update the point mesh's name if it's a dynamic point
+        labelSprite.userData.ownerPointMesh.userData.labelName = newLabel;
+    }
+     if (typeof updateTextSpriteSize_AU === 'function') updateTextSpriteSize_AU(labelSprite);
+    return true;
+}
+
+
 function handleDoubleClick_M(intersect) {
     const { object, point, face } = intersect;
 
     const labelSprite = intersect.object;
     if (labelSprite && (labelSprite.userData.isCornerLabel || labelSprite.userData.isDynamicPointLabel)) {
-        // Label renaming is a more complex command (needs old/new value), will implement with full undo/redo.
-        // For now, direct change.
         const currentLabel = labelSprite.userData.labelText;
         if (typeof promptForNewLabel_UM === 'function') {
             const newLabel = promptForNewLabel_UM(currentLabel, (lbl) => lbl === currentLabel || !isLabelUsed_M(lbl));
             if (newLabel && newLabel !== currentLabel) {
-                let success = false;
-                if (labelSprite.userData.isCornerLabel && typeof updateCornerLabelText_SM === 'function') {
-                   success = updateCornerLabelText_SM(labelSprite, newLabel);
-                } else if (labelSprite.userData.isDynamicPointLabel) {
-                    unregisterLabel_M(currentLabel);
-                    registerLabel_M(newLabel);
-                    labelSprite.userData.labelText = newLabel;
-                    if (typeof updateTextSpriteSize_AU === 'function') updateTextSpriteSize_AU(labelSprite);
-                    success = true;
-                }
-                if (success && typeof updateDemoExplanation === 'function') {
+                const command = new RenameLabelCommand(labelSprite, currentLabel, newLabel);
+                executeCommand_M(command);
+                 if (typeof updateDemoExplanation === 'function') {
                      updateDemoExplanation(`Étiquette "${currentLabel}" changée en "${newLabel}".`);
                 }
             }
@@ -1175,8 +1180,8 @@ class AddDynamicPointCommand {
         this.pointMesh = pointMesh;
         this.type = 'AddDynamicPointCommand';
     }
-    execute() { // Already added by addDynamicPoint, so execute is effectively a no-op here
-        dynamicPointsGroup_M.add(this.pointMesh); // Ensure it's added if redoing
+    execute() { 
+        dynamicPointsGroup_M.add(this.pointMesh); 
         if (!this.pointMesh.parent) dynamicPointsGroup_M.add(this.pointMesh);
         registerLabel_M(this.pointMesh.userData.labelName);
         this.pointMesh.visible = true;
@@ -1184,7 +1189,6 @@ class AddDynamicPointCommand {
     undo() {
         unregisterLabel_M(this.pointMesh.userData.labelName);
         dynamicPointsGroup_M.remove(this.pointMesh);
-        // For full removal, dispose geometry/material, but for undo, just remove from group
         this.pointMesh.visible = false;
     }
 }
@@ -1202,6 +1206,35 @@ class AddCustomEdgeCommand {
     undo() {
         customEdgesGroup_M.remove(this.edgeMesh);
         this.edgeMesh.visible = false;
+    }
+}
+
+class RenameLabelCommand {
+    constructor(labelSprite, oldLabel, newLabel) {
+        this.labelSprite = labelSprite;
+        this.oldLabel = oldLabel;
+        this.newLabel = newLabel;
+        this.type = 'RenameLabelCommand';
+    }
+
+    execute() {
+        const success = performLabelRename_M(this.labelSprite, this.newLabel, this.oldLabel);
+        if (!success) { // Should not happen if prompt validation is correct
+            console.warn("RenameLabelCommand: execute failed, label might be in use.");
+            // Attempt to revert registration state to be safe
+            unregisterLabel_M(this.newLabel);
+            registerLabel_M(this.oldLabel);
+        }
+    }
+
+    undo() {
+        const success = performLabelRename_M(this.labelSprite, this.oldLabel, this.newLabel);
+         if (!success) {
+            console.warn("RenameLabelCommand: undo failed, label might be in use.");
+            // Attempt to revert registration state
+            unregisterLabel_M(this.oldLabel);
+            registerLabel_M(this.newLabel);
+        }
     }
 }
 

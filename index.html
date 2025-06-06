@@ -8,12 +8,13 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <button id="main-ui-panel-toggle">☰</button>
-    <div id="ui-panel">
-        <h1>Géométrie 3D</h1>
+    <button id="main-ui-panel-toggle" aria-label="Toggle main menu" aria-controls="ui-panel" aria-expanded="false">☰</button>
+    <div id="ui-panel" role="region" aria-labelledby="ui-panel-title" aria-hidden="true">
+        <h1 id="ui-panel-title">Géométrie 3D</h1>
         
         <div class="section">
             <h2>Choix de la Forme</h2>
+            <label for="shape-selector" class="sr-only">Sélectionner une forme géométrique</label>
             <select id="shape-selector"></select>
             <div id="shape-info">
                 <p>Forme: <span id="shape-name">-</span></p>
@@ -24,7 +25,7 @@
 
         <div class="section" id="description-panel-section">
             <h2>Description Actuelle</h2>
-            <p id="demo-explanation">Bienvenue dans l'Explorateur Géométrique !</p>
+            <p id="demo-explanation" aria-live="polite">Bienvenue dans l'Explorateur Géométrique !</p>
         </div>
         
         <div class="section">
@@ -35,13 +36,13 @@
 
         <div class="section">
             <h2>Outils d'Interaction</h2>
-            <button id="middle-point-mode">Mode Point Milieu</button>
-            <button id="measure-mode-button">Mode Mesure</button> 
-            <button id="toggle-axes-helper-button">Afficher Axes</button>
+            <button id="middle-point-mode" aria-pressed="false">Mode Point Milieu</button>
+            <button id="measure-mode-button" aria-pressed="false">Mode Mesure</button> 
+            <button id="toggle-axes-helper-button" aria-pressed="false">Afficher Axes</button>
             <button id="clean-dynamic-points-button">Supprimer Éléments</button>
             <div id="dynamic-interaction-controls">
-                <button id="undo-button" title="Annuler (Ctrl+Z)" aria-label="Annuler" disabled>↩️</button>
-                <button id="redo-button" title="Rétablir (Ctrl+Y)" aria-label="Rétablir" disabled>↪️</button>
+                <button id="undo-button" title="Annuler (Ctrl+Z)" aria-label="Annuler" disabled aria-disabled="true">↩️</button>
+                <button id="redo-button" title="Rétablir (Ctrl+Y)" aria-label="Rétablir" disabled aria-disabled="true">↪️</button>
             </div>
             <div id="dynamic-points-info" style="font-size:0.8em; margin-top:5px;"></div>
         </div>
@@ -99,11 +100,11 @@
         <div id="main-shape-color-panel">
             <div class="main-color-picker-item">
                 <label for="main-fill-color-picker">Remplissage Forme:</label>
-                <input type="color" id="main-fill-color-picker" data-css-var="--main-shape-fill-color">
+                <input type="color" id="main-fill-color-picker" data-css-var="--main-shape-fill-color" aria-label="Couleur de remplissage de la forme principale">
             </div>
             <div class="main-color-picker-item">
                 <label for="main-edge-color-picker">Arêtes Forme:</label>
-                <input type="color" id="main-edge-color-picker" data-css-var="--main-shape-edge-color">
+                <input type="color" id="main-edge-color-picker" data-css-var="--main-shape-edge-color" aria-label="Couleur des arêtes de la forme principale">
             </div>
         </div>
         <div id="create-edge-panel" style="display: none;">
@@ -120,9 +121,9 @@
         </div>
     </div>
 
-    <button id="hidden-menu-toggle">⚙️</button>
-     <div id="hidden-menu-panel"> 
-        <h3>Options Avancées</h3>
+    <button id="hidden-menu-toggle" aria-label="Toggle advanced options" aria-controls="hidden-menu-panel" aria-expanded="false">⚙️</button>
+     <div id="hidden-menu-panel" role="region" aria-labelledby="hidden-menu-title" aria-hidden="true"> 
+        <h3 id="hidden-menu-title">Options Avancées</h3>
         <div id="library-status">Chargement des bibliothèques...</div>
          <label for="lib-mode-select">Mode de chargement:</label>
         <select id="lib-mode-select">
@@ -141,7 +142,7 @@
         <div id="visual-options-panel">
              <div class="adv-option-item">
                 <label for="label-font-size-input">Taille Étiquettes (px):</label>
-                <input type="number" id="label-font-size-input" data-css-var="--label-font-size" min="8" max="72" step="1">
+                <input type="number" id="label-font-size-input" data-css-var="--label-font-size" min="8" max="72" step="1" aria-label="Taille de la police des étiquettes en pixels">
             </div>
         </div>
         
@@ -150,7 +151,7 @@
             <button id="reset-advanced-options-button">Réinitialiser Options</button>
         </div>
     </div>
-
+    <span class="sr-only" id="label-shape-selector">Choisir une forme géométrique à afficher</span>
     <script src="libraryLoader.js" defer></script>
     <script src="uiManager.js" defer></script>
     <script src="shapeManager.js" defer></script>

@@ -36,6 +36,8 @@ let labelFontSizeInput;
 let applyAdvancedOptionsButton, resetAdvancedOptionsButton;
 
 let fpsCurrentDisplay, fpsMinDisplay, fpsMaxDisplay, fpsGraphBar;
+let mainContainer_UM; // To detect clicks outside the panel
+
 
 // References to functions from other modules (will be set by main.js)
 let switchShapeCallback, setViewModeCallback, togglePartyModeCallback;
@@ -148,6 +150,8 @@ function initializeUIElements() {
     fpsMinDisplay = document.getElementById('fps-min');
     fpsMaxDisplay = document.getElementById('fps-max');
     fpsGraphBar = document.getElementById('fps-graph-bar');
+    mainContainer_UM = document.getElementById('container');
+
 
     mainFillColorPicker = document.getElementById('main-fill-color-picker');
     mainEdgeColorPicker = document.getElementById('main-edge-color-picker');
@@ -209,6 +213,7 @@ function createAdvancedPanelControls() {
             picker.type = 'color';
             picker.id = `adv-picker-${key}`; 
             picker.dataset.cssVar = item.cssVar;
+            picker.setAttribute('aria-label', item.label);
             
             let initialValue = item.default;
             if (initialValue.startsWith('rgba')) {
@@ -348,23 +353,34 @@ function setupEventListeners(callbacks) {
     if(btnRedo) btnRedo.onclick = redoCallback; 
 
 
-    if(mainUiPanelToggle && uiPanel) { // For mobile UI
-        mainUiPanelToggle.onclick = () => {
-            uiPanel.classList.toggle('visible');
+    if(mainUiPanelToggle && uiPanel) { 
+        mainUiPanelToggle.onclick = (event) => {
+            event.stopPropagation(); // Prevent click from bubbling to container
+            const isVisible = uiPanel.classList.toggle('visible');
+            mainUiPanelToggle.setAttribute('aria-expanded', isVisible.toString());
+            uiPanel.setAttribute('aria-hidden', (!isVisible).toString());
         };
-         // Close panel if clicking outside on mobile
-        document.getElementById('container').addEventListener('click', () => {
-            if (uiPanel.classList.contains('visible')) {
-                uiPanel.classList.remove('visible');
-            }
-        });
+        
+        if(mainContainer_UM) {
+            mainContainer_UM.addEventListener('click', () => {
+                if (uiPanel.classList.contains('visible') && window.innerWidth <= 768) { // Only for mobile
+                    uiPanel.classList.remove('visible');
+                    mainUiPanelToggle.setAttribute('aria-expanded', 'false');
+                    uiPanel.setAttribute('aria-hidden', 'true');
+                }
+            });
+        }
         uiPanel.addEventListener('click', (event) => {
-            event.stopPropagation(); // Prevent clicks inside panel from closing it
+            event.stopPropagation(); 
         });
     }
-    if(hiddenMenuToggle && hiddenMenuPanel) { // Gear button for advanced options
-        hiddenMenuToggle.onclick = () => {
-            hiddenMenuPanel.classList.toggle('visible');
+
+    if(hiddenMenuToggle && hiddenMenuPanel) { 
+        hiddenMenuToggle.onclick = (event) => {
+            event.stopPropagation();
+            const isVisible = hiddenMenuPanel.classList.toggle('visible');
+            hiddenMenuToggle.setAttribute('aria-expanded', isVisible.toString());
+            hiddenMenuPanel.setAttribute('aria-hidden', (!isVisible).toString());
         };
     }
 
@@ -485,6 +501,12 @@ function clearCreateEdgeInputs_UM() {
 }
 
 function setUndoRedoButtonStates_UM(canUndo, canRedo) {
-    if (btnUndo) btnUndo.disabled = !canUndo;
-    if (btnRedo) btnRedo.disabled = !canRedo;
+    if (btnUndo) {
+        btnUndo.disabled = !canUndo;
+        btnUndo.setAttribute('aria-disabled', (!canUndo).toString());
+    }
+    if (btnRedo) {
+        btnRedo.disabled = !canRedo;
+        btnRedo.setAttribute('aria-disabled', (!canRedo).toString());
+    }
 }

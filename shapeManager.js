@@ -1,4 +1,3 @@
-
 // References to global objects from main.js, stored locally
 let sm_THREE, sm_ANIME; // Scoped to shapeManager
 let currentShapeMaterial_SM, currentEdgesMaterial_SM; 
@@ -83,26 +82,37 @@ function clearCornerLabels_SM() {
 }
 
 function updateCornerLabelText_SM(labelSprite, newText) {
-    if (!labelSprite || !labelSprite.userData.isCornerLabel || !sm_THREE || typeof updateTextSpriteSize_AU !== 'function') return false;
+    if (!labelSprite || !labelSprite.userData.isCornerLabel || !sm_THREE) return false;
     
     const oldLabel = labelSprite.userData.labelText;
 
+    // Validation is now primarily handled before calling this, or by the command.
+    // This function's role is reduced if performLabelRename_M in main.js handles registration.
+    // However, for direct calls (if any), validation is still useful here.
     if (typeof isLabelUsed_SM_Callback === 'function' && newText !== oldLabel && isLabelUsed_SM_Callback(newText)) {
-        alert("Cette étiquette est déjà utilisée. Veuillez en choisir une autre.");
+        // This alert might be redundant if promptForNewLabel_UM already validates.
+        // Consider if this specific alert is needed or if the command pattern handles it.
+        // For now, keeping it as a safeguard for direct calls.
+        // alert("Cette étiquette est déjà utilisée. Veuillez en choisir une autre.");
         return false; 
     }
 
-    if (typeof unregisterLabel_SM === 'function' && oldLabel) {
-        unregisterLabel_SM(oldLabel);
-    }
-    if (typeof registerLabel_SM === 'function' && newText) {
-        registerLabel_SM(newText);
-    }
+    // The actual label update (unregister old, register new, update sprite)
+    // is now expected to be handled by performLabelRename_M in main.js,
+    // which is called by the RenameLabelCommand.
+    // This function now might just confirm the sprite type.
+    
+    // Example of direct update (if not using command pattern for some reason):
+    // if (typeof unregisterLabel_SM === 'function' && oldLabel) {
+    //     unregisterLabel_SM(oldLabel);
+    // }
+    // if (typeof registerLabel_SM === 'function' && newText) {
+    //     registerLabel_SM(newText);
+    // }
+    // labelSprite.userData.labelText = newText; 
+    // if (typeof updateTextSpriteSize_AU === 'function') updateTextSpriteSize_AU(labelSprite); 
 
-    labelSprite.userData.labelText = newText; 
-    updateTextSpriteSize_AU(labelSprite); 
-
-    return true;
+    return true; // Indicate success for the command pattern
 }
 
 
